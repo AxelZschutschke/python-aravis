@@ -145,7 +145,8 @@ class Camera(object):
         for _ in range(0, nb):
             self.stream.push_buffer(Aravis.Buffer.new_allocate(payload))
 
-    def pop_frame(self, timestamp=False):
+    def pop_frame(self, timestamp=False, timeout:float =None):
+        timeStart = time.time()
         while True: #loop in python in order to allow interrupt, have the loop in C might hang
             if timestamp:
                 ts, frame = self.try_pop_frame(timestamp)
@@ -153,6 +154,8 @@ class Camera(object):
                 frame = self.try_pop_frame()
 
             if frame is None:
+                if timeout and time.time() > timeStart+timeout:
+                    return None
                 time.sleep(0.001)
             else:
                 if timestamp:
